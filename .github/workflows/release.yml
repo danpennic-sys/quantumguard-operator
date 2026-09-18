@@ -1,0 +1,94 @@
+# Build Operator Pack binaries when a version tag is pushed.
+# Publishing the GitHub Release and attaching assets remains a controlled step
+# (manual or gh release create) so signing/checksum discipline stays explicit.
+
+name: release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - goos: linux
+            goarch: amd64
+          - goos: linux
+            goarch: arm64
+          - goos: darwin
+            goarch: amd64
+          - goos: darwin
+            goarch: arm64
+    steps:
+      - name: Checkout Operator Pack (this repo)
+        uses: actions/checkout@v4
+
+      - name: Checkout public QuantumGuard source
+        uses: actions/checkout@v4
+        with:
+          repository: danpennic-sys/quantumguard
+          path: quantumguard
+          # Pin for reproducible releases when ready:
+          # ref: <commit-or-tag>
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.22"
+
+      - name: Test public verifier
+        working-directory: quantumguard
+        run: go test ./...
+
+      - name: Build qg and qg-http
+        working-directory: quantumguard
+        env:
+          GOOS: ${{ matrix.goos }}
+          GOARCH: ${{ matrix.goarch }}
+          CGO_ENABLED: "0"
+        run: |
+          mkdir -p dist
+          go build -trimpath -ldflags="-s -w" -o "dist/qg-${GOOS}-${GOARCH}" ./cmd/qg
+          go build -trimpath -ldflags="-s -w" -o "dist/qg-http-${GOOS}-${GOARCH}" ./cmd/qg-http
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: qg-${{ matrix.goos }}-${{ matrix.goarch }}
+          path: quantumguard/dist/*
+          if-no-files-found: error
+
+  checksums:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Produce SHA256SUMS
+        run: |
+          mkdir -p out
+          find artifacts -type f -name 'qg*' -exec cp {} out/ \;
+          cd out
+          sha256sum qg-* > SHA256SUMS
+          cat SHA256SUMS
+
+      - name: Upload checksums bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: checksums-and-binaries
+          path: out/
+
+# After this workflow succeeds:
+#   1. Download the checksums-and-binaries artifact
+#   2. Optionally sign / evidence-wrap SHA256SUMS with QuantumGuard discipline
+#   3. gh release create "$TAG" out/* --repo danpennic-sys/quantumguard-operator --notes "..."
