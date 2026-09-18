@@ -1,0 +1,12 @@
+{
+  "product": "quantumguard-operator",
+  "version": "1",
+  "licensee": "Example Org <security@example.invalid>",
+  "site": true,
+  "seats": null,
+  "issued": "2026-09-18T00:00:00Z",
+  "expires": null,
+  "notes": "EXAMPLE ONLY — not a valid license. Signature is a placeholder.",
+  "issuer_public_key": "0000000000000000000000000000000000000000000000000000000000000000",
+  "signature": "00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
+}
