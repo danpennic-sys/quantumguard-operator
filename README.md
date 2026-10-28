@@ -13,8 +13,8 @@ This repository is the **paid Operator Pack** — access is granted after purcha
 |-------------|-------------|
 | Signed release binaries | `qg` and `qg-http` for linux/amd64, linux/arm64, darwin/amd64, darwin/arm64 |
 | Conformance kit | Golden vectors + CLI ≡ HTTP equivalence proofs |
-| Operator runbook | Offline / air-gap verification procedures |
-| License file | Machine-readable license for your org |
+| Operator runbook | **Final** offline / air-gap verification procedures (`docs/RUNBOOK.md`) |
+| License file | Machine-readable `LICENSE.json` (schema in `docs/LICENSE-FORMAT.md`) |
 | Support window | Contract freeze guarantee + upgrade protocol notes |
 
 **What stays free:** the QuantumGuard source, CONTRACT-v1, and public vectors remain MIT OR Apache-2.0.
@@ -44,17 +44,19 @@ Contact: **danpennic@gmail.com** · Operator @ operatorpagesllc.com
 
 ```
 quantumguard-operator/
-├── README.md                 # this file
-├── LICENSE.md                # commercial license terms
+├── README.md                   # this file
+├── LICENSE.md                  # commercial license terms
 ├── docs/
-│   ├── LICENSE-FORMAT.md     # LICENSE.json schema
-│   ├── RUNBOOK.md            # operator procedures
-│   └── STOREFRONT.md         # how GitHub is used as storefront
+│   ├── LICENSE-FORMAT.md       # LICENSE.json schema (final v1)
+│   ├── RUNBOOK.md              # air-gap operator procedures (final v1)
+│   ├── STOREFRONT.md           # GitHub as storefront
+│   └── WORKFLOW.md             # payment → access → release → support
 ├── licenses/
-│   └── EXAMPLE-LICENSE.json  # sample license file (not valid)
-├── releases/                 # signed binaries land here (or GitHub Releases)
+│   ├── EXAMPLE-LICENSE.json    # sample (not valid)
+│   └── LICENSE.template.json   # issuance template
+├── releases/                   # signed binaries via GitHub Releases
 └── scripts/
-    └── verify-license.sh     # optional local license check helper
+    └── verify-license.sh       # structural license check (no crypto)
 ```
 
 ---
@@ -67,12 +69,14 @@ quantumguard-operator/
 # 3. Verify an evidence bundle with the same contract as public qg
 ./qg verify path/to/bundle.json
 
-# HTTP
+# HTTP (loopback on air-gapped hosts)
 ./qg-http &
-curl -s -X POST --data-binary @bundle.json http://localhost:8080/verify
+curl -s -X POST --data-binary @bundle.json http://127.0.0.1:8080/verify
 ```
 
 Verdicts are identical to the public verifier: `PASS` | `FAIL` | `INDETERMINATE`.
+
+Full offline procedure: **`docs/RUNBOOK.md`**.
 
 ---
 
