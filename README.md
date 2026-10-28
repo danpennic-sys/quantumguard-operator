@@ -46,6 +46,7 @@ Contact: **danpennic@gmail.com** · Operator @ operatorpagesllc.com
 quantumguard-operator/
 ├── README.md                   # this file
 ├── LICENSE.md                  # commercial license terms
+├── ISSUER.md                   # issuer public key (private key offline only)
 ├── docs/
 │   ├── LICENSE-FORMAT.md       # LICENSE.json schema (final v1)
 │   ├── RUNBOOK.md              # air-gap operator procedures (final v1)
@@ -56,7 +57,8 @@ quantumguard-operator/
 │   └── LICENSE.template.json   # issuance template
 ├── releases/                   # signed binaries via GitHub Releases
 └── scripts/
-    └── verify-license.sh       # structural license check (no crypto)
+    ├── verify-license.sh       # structural license check (no crypto)
+    └── sign-license.py         # offline LICENSE.json issuer (requires private key)
 ```
 
 ---
@@ -76,7 +78,10 @@ curl -s -X POST --data-binary @bundle.json http://127.0.0.1:8080/verify
 
 Verdicts are identical to the public verifier: `PASS` | `FAIL` | `INDETERMINATE`.
 
-Full offline procedure: **`docs/RUNBOOK.md`**.
+Exit codes: `PASS=0`, `FAIL=1`, usage/I/O=`2`, `INDETERMINATE=3`.
+
+Full offline procedure: **`docs/RUNBOOK.md`**.  
+Issuer public key: **`ISSUER.md`**.
 
 ---
 
