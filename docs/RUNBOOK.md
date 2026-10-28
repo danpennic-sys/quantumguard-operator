@@ -19,11 +19,12 @@ This runbook is for licensees of the commercial Operator Pack. The public verifi
 
 Exit codes (Operator Pack CLI, aligned with public `qg`):
 
-| Verdict | Exit code |
-|---------|-----------|
+| Verdict / condition | Exit code |
+|---------------------|-----------|
 | `PASS` | `0` |
 | `FAIL` | `1` |
-| `INDETERMINATE` | `2` |
+| Usage / parse / I/O error | `2` |
+| `INDETERMINATE` | `3` |
 
 ---
 
@@ -31,7 +32,7 @@ Exit codes (Operator Pack CLI, aligned with public `qg`):
 
 1. **Contract** — You accept CONTRACT-v1 as frozen (public repo).
 2. **Binary** — Use a signed release from this private repo **or** a local build from public source at a known commit. Record the version/commit in your custody log.
-3. **Integrity** — Verify release checksums (`SHA256SUMS`) offline against the published sums for that tag.
+3. **Integrity** — Verify release checksums (`SHA256SUMS`) offline against the published sums for that tag. Optionally verify `SHA256SUMS.sig` (issuer Ed25519) or `SHA256SUMS.qg.json` (CONTRACT-v1 evidence of the same bytes). Issuer public key is documented in `ISSUER.md`.
 4. **License** — Place `LICENSE.json` next to the binary or set `QG_LICENSE_PATH`. Absence of a license does **not** change verifier verdicts; it only gates Operator Pack entitlement and support.
 5. **Evidence schema** — Bundle must match CONTRACT-v1 JSON fields and encodings.
 
@@ -41,7 +42,7 @@ Exit codes (Operator Pack CLI, aligned with public `qg`):
 
 Preferred path when the operator host has no outbound network:
 
-1. On a connected build/admin machine: download the private Release asset for your platform + `SHA256SUMS`.
+1. On a connected build/admin machine: download the private Release asset for your platform + `SHA256SUMS` (+ optional `.sig` / `.qg.json`).
 2. Compute checksums offline and compare to `SHA256SUMS`.
 3. Copy tarball + checksums + `LICENSE.json` to removable media (or approved one-way transfer).
 4. On the air-gapped host: extract, re-check checksums, place `LICENSE.json`.
@@ -61,8 +62,8 @@ export QG_LICENSE_PATH=./LICENSE.json
 
 ```bash
 ./qg verify /path/to/evidence.json
-# stdout: PASS | FAIL | INDETERMINATE (and stable reason/code when implemented)
-# exit: 0 | 1 | 2
+# stdout: JSON with verdict PASS | FAIL | INDETERMINATE (and stable reason/code)
+# exit: 0 | 1 | 3   (usage/I/O errors → 2)
 ```
 
 Batch (shell only; still one verifier function per file):
@@ -124,9 +125,9 @@ On any host that can hold the public conformance vectors (even air-gapped after 
 
 ```bash
 # vectors/ from public quantumguard repo, transferred offline
-./qg verify vectors/01_known_good.json    # expect PASS
-./qg verify vectors/02_tampered_payload.json  # expect FAIL (name may vary; use published set)
-# INDETERMINATE vectors: incomplete / unsupported alg / malformed
+./qg verify vectors/01_known_good.json    # expect PASS (exit 0)
+./qg verify vectors/02_tampered_payload.json  # expect FAIL (exit 1)
+# INDETERMINATE vectors: incomplete / unsupported alg / malformed (exit 3)
 ```
 
 If golden vectors fail on a release binary, stop using that binary and contact support with tag, platform, and vector name.
