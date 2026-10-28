@@ -1,0 +1,13 @@
+{
+  "product": "quantumguard-operator",
+  "version": "1",
+  "licensee": "REPLACE Org <security@example.com>",
+  "site": true,
+  "seats": null,
+  "issued": "2026-10-27T00:00:00Z",
+  "expires": null,
+  "sku": "OEG-OPERATOR",
+  "notes": "Operator Pack — single site",
+  "issuer_public_key": "REPLACE_WITH_64_HEX_ED25519_PUBLIC_KEY",
+  "signature": "REPLACE_AFTER_SIGNING_CANONICAL_BODY"
+}
